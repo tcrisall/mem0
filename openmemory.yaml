@@ -1,0 +1,152 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmemory-qdrant
+  namespace: ai
+  labels:
+    app: openmemory-qdrant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openmemory-qdrant
+  template:
+    metadata:
+      labels:
+        app: openmemory-qdrant
+    spec:
+      containers:
+        - name: openmemory-qdrant
+          image: qdrant/qdrant
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmemory-mcp
+  namespace: ai
+  labels:
+    app: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openmemory-mcp
+  template:
+    metadata:
+      labels:
+        app: openmemory-mcp
+    spec:
+      containers:
+        - name: openmemory-mcp
+          image: registry.home:5000/openmemory-mcp-test:latest
+          env:
+            - name: OPENAI_API_KEY
+              value: "sk-helicone-k7gwrky-ue6usny-xqmc37i-uxraw7i"
+            - name: OPENAI_BASE_URL
+              value: "http://192.168.100.86:8786/v1/sk-helicone-k7gwrky-ue6usny-xqmc37i-uxraw7i"
+            - name: API_KEY
+              value: "sk-helicone-k7gwrky-ue6usny-xqmc37i-uxraw7i"
+            - name: USER
+              value: "default_user"
+            - name: QDRANT_HOST
+              value: "openmemory-qdrant-lbsvc"
+            - name: QDRANT_PORT
+              value: "6333"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmemory-ui
+  namespace: ai
+  labels:
+    app: openmemory-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openmemory-ui
+  template:
+    metadata:
+      labels:
+        app: openmemory-ui
+    spec:
+      containers:
+        - name: openmemory-ui
+          image: registry.home:5000/openmemory-ui-test:latest
+#         command: ["sleep","3600"]
+#         securityContext:
+#           runAsUser: 0
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "http://192.168.100.86:8765"
+            - name: NEXT_PUBLIC_USER_ID
+              value: "default_user"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmemory-mcp-lbsvc
+  namespace: ai
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.100.86"
+    metallb.universe.tf/allow-shared-ip: "tv-stack"
+spec:
+  type: LoadBalancer
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  selector:
+    app: openmemory-mcp
+  ports:
+    - name: api
+      port: 8765
+      targetPort: 8765
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmemory-ui-lbsvc
+  namespace: ai
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.100.86"
+    metallb.universe.tf/allow-shared-ip: "tv-stack"
+spec:
+  type: LoadBalancer
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  selector:
+    app: openmemory-ui
+  ports:
+    - name: api
+      port: 3400
+      targetPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmemory-qdrant-lbsvc
+  namespace: ai
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.100.86"
+    metallb.universe.tf/allow-shared-ip: "tv-stack"
+spec:
+  type: LoadBalancer
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  selector:
+    app: openmemory-qdrant
+  ports:
+    - name: api
+      port: 6333
+      targetPort: 6333
+

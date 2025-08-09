@@ -25,7 +25,7 @@ def get_categories_for_memory(memory: str) -> List[str]:
 
         # Let OpenAI handle the pydantic parsing directly
         completion = openai_client.beta.chat.completions.parse(
-            model="gpt-4o-mini",
+            model="llama3.1:latest",
             messages=messages,
             response_format=MemoryCategories,
             temperature=0
