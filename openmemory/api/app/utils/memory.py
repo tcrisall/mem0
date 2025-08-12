@@ -291,4 +291,4 @@ def get_memory_client(custom_instructions: str = None):
 
 
 def get_default_user_id():
-    return "default_user"
+    return "myemail@gmail.com"

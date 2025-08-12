@@ -4,6 +4,37 @@ kind: Namespace
 metadata:
   name: ai
 ---
+# PV & PVCs for openmemory storage
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: openmemory-qdrant-pv
+spec:
+  capacity:
+    storage: 2Ti
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 192.168.100.115
+    path: /data2/docker/openmemory/qdrant
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openmemory-qdrant-pvc
+  namespace: ai
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Ti
+  volumeName: openmemory-qdrant-pv
+  storageClassName: ""
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,6 +55,13 @@ spec:
       containers:
         - name: openmemory-qdrant
           image: qdrant/qdrant
+          volumeMounts:
+            - name: openmemory-qdrant
+              mountPath: /qdrant/storage
+      volumes:
+        - name: openmemory-qdrant
+          persistentVolumeClaim:
+            claimName: openmemory-qdrant-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -53,7 +91,7 @@ spec:
             - name: API_KEY
               value: "sk-helicone-k7gwrky-ue6usny-xqmc37i-uxraw7i"
             - name: USER
-              value: "default_user"
+              value: "myemail@gmail.com"
             - name: QDRANT_HOST
               value: "openmemory-qdrant-lbsvc"
             - name: QDRANT_PORT
@@ -87,7 +125,7 @@ spec:
             - name: NEXT_PUBLIC_API_URL
               value: "http://192.168.100.86:8765"
             - name: NEXT_PUBLIC_USER_ID
-              value: "default_user"
+              value: "myemail@gmail.com"
 
 ---
 apiVersion: v1

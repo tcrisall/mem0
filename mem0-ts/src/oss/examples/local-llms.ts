@@ -25,7 +25,7 @@ const memory = new Memory({
   historyDbPath: "local-llms.db",
 });
 
-async function chatWithMemories(message: string, userId = "default_user") {
+async function chatWithMemories(message: string, userId = "myemail@gmail.com") {
   const relevantMemories = await memory.search(message, { userId: userId });
 
   const memoriesStr = relevantMemories.results
