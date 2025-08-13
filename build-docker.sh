@@ -11,7 +11,7 @@ case ":$PATH:" in
 esac
 
 cd openmemory/api
-#nerdctl build "$@" -t registry.home:5000/openmemory-mcp-test:latest .
+nerdctl build "$@" -t registry.home:5000/openmemory-mcp-test:latest .
 cd ../ui
 nerdctl build "$@" -t registry.home:5000/openmemory-ui-test:latest .
 cd ../..
@@ -21,7 +21,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-#nerdctl push --insecure-registry registry.home:5000/openmemory-mcp-test:latest
+nerdctl push --insecure-registry registry.home:5000/openmemory-mcp-test:latest
 nerdctl push --insecure-registry registry.home:5000/openmemory-ui-test:latest
 
 read -p "Do you wish to deploy to Kubernetes? (y/N): " x
